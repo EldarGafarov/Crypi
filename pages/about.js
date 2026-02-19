@@ -11,25 +11,13 @@ export default function About() {
       name: 'Ben Zacai',
       linkedin: 'https://www.linkedin.com/in/ben-zakai/',
       image: 'https://media.licdn.com/dms/image/v2/D4E03AQENExVjJyT-5g/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1675891722883?e=1740009600&v=beta&t=wRqpBvOTfjDpHX_2946adpIroxPGUGfUUE-OjZn_V_o',
-      workplace: 'Cyber security software developer | B.Sc Software Engineering Student',
-    },
-    {
-      name: 'Nadir Yaakov',
-      linkedin: 'https://www.linkedin.com/in/nadir-yaakov-479754154/',
-      image: 'https://media.licdn.com/dms/image/v2/D4D03AQGgPw_u9go_oA/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1656495965015?e=1740009600&v=beta&t=pmRLG3zbYuGABnOABdLO3Fyy1Cnsh4-UKjHqWUsd3lk',
-      workplace: 'Student | Third year B.Sc Software Engineering Student',
-    },
-    {
-      name: 'Roee Bar',
-      linkedin: 'https://www.linkedin.com/in/roee-bar/',
-      image: 'https://media.licdn.com/dms/image/v2/D4D03AQHeqUBj-3T3aA/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1681210351276?e=1740009600&v=beta&t=jXsQLg7Rw9z8xO9QDynWK3C-tvLnfLQR-RTAOTCwhbI',
-      workplace: 'Software Engineer | Elbit Systems | Technion Venture Capital Club | Google Developers Group Haifa',
+      workplace: <>Cyber Security Software Developer <br />B.Sc Software Engineer</>,
     },
     {
       name: 'Eldar Gafarov',
       linkedin: 'https://www.linkedin.com/in/eldar-gafarov/',
       image: 'https://media.licdn.com/dms/image/v2/C4E03AQETFta5uSQoBA/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1657556884411?e=1740009600&v=beta&t=IK8udnOH3pP1Y5_QiZU4QaI6maZilwJKEuIiLPFoAZI',
-      workplace: 'SQA Engineer | B.Sc Software Engineering Student',
+      workplace: <>Software Developer <br />B.Sc Software Engineer </>,
     },
   ];
   
@@ -48,7 +36,7 @@ export default function About() {
         </h1>
         <p className={`text-lg md:text-xl font-light mb-8 max-w-2xl mx-auto
           ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
-          We are a team of 4 students from Braude College of Engineering: Ben Zacai, Nadir Yaakov, Roee Bar, and Eldar Gafarov.
+          We are a team of 2 students from Braude College of Engineering: <br />Ben Zacai & Eldar Gafarov.
         </p>
   
         <p className={`text-lg md:text-xl font-light mb-8 max-w-3xl mx-auto
