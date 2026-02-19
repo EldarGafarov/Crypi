@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Root Variables */
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Container Styles */
+.container {
+  @apply p-6 bg-gradient-to-br from-gray-100 to-gray-200 min-h-screen;
+}
+
+/* Grid Layout */
+.grid-layout {
+  @apply grid grid-cols-1 gap-6;
+}
+
+@media (min-width: 640px) {
+  .grid-layout {
+    @apply grid-cols-2;
+  }
+}
+
+@media (min-width: 768px) {
+  .grid-layout {
+    @apply grid-cols-3;
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-layout {
+    @apply grid-cols-5;
+  }
+}
+
+/* Coin Box Styles */
+.coin-box {
+  @apply p-5 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg shadow-lg flex items-center text-left gap-4 overflow-hidden transition-transform duration-300 ease-in-out;
+}
+
+.coin-box:hover {
+  @apply -translate-y-1 shadow-2xl;
+}
+
+/* Coin Image Styles */
+.coin-box img {
+  @apply w-16 h-16 object-cover rounded-full border-2 border-white;
+}
+
+/* Text Styles */
+.coin-box h2 {
+  @apply text-lg font-bold mb-1 truncate;
+}
+
+.coin-box p {
+  @apply text-base font-bold mt-1 truncate tracking-wide;
+}
+
+/* Header Styles */
+.header {
+  @apply bg-gradient-to-r from-cyan-500 to-blue-500 text-white p-4 shadow-md flex items-center justify-center;
+}
+
+.header-title {
+  @apply text-xl font-bold m-0;
+}
