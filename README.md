@@ -43,7 +43,7 @@ Bitcoin · Ethereum · Binance · Cardano · Solana · Ripple · Dogecoin · Lit
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/goodpvp90/Crypi.git
+git clone https://github.com/EldarGafarov/Crypi.git
 cd Crypi
 ```
 
