@@ -1,40 +1,57 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-
-const COINS = [
-  { symbol: 'BTCUSDT', name: 'Bitcoin', image: '/images/bitcoin.png' },
-  { symbol: 'ETHUSDT', name: 'Ethereum', image: '/images/ethereum.webp' },
-  { symbol: 'BNBUSDT', name: 'Binance', image: '/images/binance.png' },
-  { symbol: 'ADAUSDT', name: 'Cardano', image: '/images/cardano.png' },
-  { symbol: 'SOLUSDT', name: 'Solana', image: '/images/solana.jpg' },
-  { symbol: 'XRPUSDT', name: 'Ripple', image: '/images/ripple.png' },
-  { symbol: 'DOGEUSDT', name: 'Dogecoin', image: '/images/doge.png' },
-  { symbol: 'LTCUSDT', name: 'Litecoin', image: '/images/litecoin.png' },
-  { symbol: 'XLMUSDT', name: 'Stellar', image: '/images/xlm.png' },
-  { symbol: 'DOTUSDT', name: 'Polkadot', image: '/images/polkadot.png' },
-];
+import CoinIcon from '../components/CoinIcon';
 
 export default function Wallet() {
   const { user, loading } = useAuth();
   const { isDarkMode } = useTheme();
   const router = useRouter();
 
+  const [coins, setCoins] = useState([]);
+  const [coinsLoading, setCoinsLoading] = useState(true);
   const [prices, setPrices] = useState({});
   const [holdings, setHoldings] = useState({});
-  const [saveStatus, setSaveStatus] = useState(''); // 'saved' | 'error' | ''
+  const [saveStatus, setSaveStatus] = useState('');
   const [saving, setSaving] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const wsRef = useRef(null);
+  const searchTimer = useRef(null);
 
-  // Auth guard: if auth has finished loading and there is no user, redirect to login.
-  // This protects the page from being accessed without being logged in.
+  // Auth guard
   useEffect(() => {
     if (!loading && !user) router.push('/login');
   }, [user, loading]);
 
-  // Once we know the user is logged in, load their saved coin amounts from the database.
-  // Converts the array from the API into an object like: { BTCUSDT: '0.5', ETHUSDT: '2' }
-  // so it's easy to look up by symbol in the inputs.
+  // Load the user's coin list — same source as the dashboard (/api/coins/user)
+  // so adding/removing coins here also updates the dashboard.
+  useEffect(() => {
+    if (!user) return;
+
+    const loadCoins = async () => {
+      setCoinsLoading(true);
+      const res = await fetch('/api/coins/user');
+      const data = await res.json();
+
+      if (data.coins && data.coins.length > 0) {
+        setCoins(data.coins);
+      } else {
+        // First visit: seed with top 10
+        const topRes = await fetch('/api/coins/top');
+        const topData = await topRes.json();
+        setCoins(topData.coins || []);
+      }
+      setCoinsLoading(false);
+    };
+
+    loadCoins();
+  }, [user]);
+
+  // Load saved holding amounts
   useEffect(() => {
     if (!user) return;
     fetch('/api/wallet')
@@ -48,47 +65,85 @@ export default function Wallet() {
       });
   }, [user]);
 
-  // Open a single WebSocket connection to Binance that streams live trade prices
-  // for all 10 coins at once. Every time a trade happens on Binance, onmessage fires
-  // and we update the price for that specific coin in state.
-  // The return () => ws.close() cleans up the connection when you leave the page.
+  // WebSocket: reconnects whenever the coin list changes
   useEffect(() => {
-    const streams = COINS.map((c) => `${c.symbol.toLowerCase()}@trade`).join('/');
+    if (coins.length === 0) return;
+
+    if (wsRef.current) wsRef.current.close();
+
+    const streams = coins.map((c) => `${c.symbol.toLowerCase()}@trade`).join('/');
     const ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
+    wsRef.current = ws;
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      // ...prev spreads all existing prices, then we override just the one that changed
       setPrices((prev) => ({ ...prev, [data.data.s]: parseFloat(data.data.p) }));
     };
 
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
+    ws.onerror = (err) => console.error('WebSocket error:', err);
 
     return () => ws.close();
-  }, []);
+  }, [coins]);
 
-  // Calculates the total portfolio value by multiplying amount × price for each coin.
-  // This recalculates on every render — so whenever prices update (every second from WebSocket)
-  // or holdings change (when user types), the total updates automatically.
-  const totalValue = COINS.reduce((sum, coin) => {
+  // Debounced search for the Add Coin modal
+  useEffect(() => {
+    if (!showModal) return;
+    clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(async () => {
+      setSearching(true);
+      const res = await fetch(`/api/coins/search?q=${encodeURIComponent(searchQuery)}`);
+      const data = await res.json();
+      setSearchResults(data.coins || []);
+      setSearching(false);
+    }, 300);
+  }, [searchQuery, showModal]);
+
+  const openModal = () => {
+    setSearchQuery('');
+    setSearchResults([]);
+    setShowModal(true);
+  };
+
+  // Persists the coin list to /api/coins/user — shared with the dashboard
+  const saveCoinList = async (newCoins) => {
+    await fetch('/api/coins/user', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ coins: newCoins }),
+    });
+  };
+
+  const addCoin = async (coin) => {
+    if (coins.find((c) => c.symbol === coin.symbol)) return;
+    const newCoins = [...coins, coin];
+    setCoins(newCoins);
+    await saveCoinList(newCoins);
+  };
+
+  const removeCoin = async (symbol) => {
+    const newCoins = coins.filter((c) => c.symbol !== symbol);
+    setCoins(newCoins);
+    setHoldings((prev) => {
+      const next = { ...prev };
+      delete next[symbol];
+      return next;
+    });
+    await saveCoinList(newCoins);
+  };
+
+  const totalValue = coins.reduce((sum, coin) => {
     const amount = parseFloat(holdings[coin.symbol]) || 0;
     const price = prices[coin.symbol] || 0;
     return sum + amount * price;
   }, 0);
 
-  // Called every time the user types in an amount input.
-  // Updates only the changed coin and keeps all other holdings intact using ...prev spread.
   const handleAmountChange = (symbol, value) => {
     setHoldings((prev) => ({ ...prev, [symbol]: value }));
   };
 
-  // Sends the current holdings to the server to be saved in MongoDB.
-  // Disables the button while saving, then shows a success or error message for 3 seconds.
   const handleSave = async () => {
     setSaving(true);
-    const holdingsArray = COINS.map((c) => ({
+    const holdingsArray = coins.map((c) => ({
       symbol: c.symbol,
       amount: parseFloat(holdings[c.symbol]) || 0,
     }));
@@ -101,13 +156,10 @@ export default function Wallet() {
 
     setSaving(false);
     setSaveStatus(res.ok ? 'saved' : 'error');
-    // Clear the status message after 3 seconds
     setTimeout(() => setSaveStatus(''), 3000);
   };
 
-  // Render nothing while auth is loading or if there's no user.
-  // Without this, the wallet content would flash on screen for a moment before the redirect.
-  if (loading || !user) return null;
+  if (loading || !user || coinsLoading) return null;
 
   return (
     <div className={`min-h-screen px-4 py-8 transition-colors duration-200
@@ -128,29 +180,29 @@ export default function Wallet() {
           </p>
         </div>
 
-        {/* Coin Holdings Table */}
-        <div className={`rounded-xl shadow-xl overflow-hidden
-          ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
-          <div className={`px-6 py-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+        {/* Holdings Table */}
+        <div className={`rounded-xl shadow-xl overflow-hidden ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
+          <div className={`px-6 py-4 border-b flex items-center justify-between ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
             <h2 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
               My Holdings
             </h2>
+            <button
+              onClick={openModal}
+              className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg font-semibold transition text-sm"
+            >
+              + Add Coin
+            </button>
           </div>
 
           <div className="divide-y divide-gray-700/30">
-            {COINS.map((coin) => {
+            {coins.map((coin) => {
               const amount = parseFloat(holdings[coin.symbol]) || 0;
               const price = prices[coin.symbol] || 0;
               const subtotal = amount * price;
 
               return (
                 <div key={coin.symbol} className="flex items-center gap-4 px-6 py-4">
-                  {/* Coin image + name */}
-                  <img
-                    src={coin.image}
-                    alt={coin.name}
-                    className="w-10 h-10 rounded-full object-cover border-2 border-cyan-400/30"
-                  />
+                  <CoinIcon coin={coin} size="lg" />
                   <div className="flex-1 min-w-0">
                     <p className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
                       {coin.name}
@@ -160,7 +212,6 @@ export default function Wallet() {
                     </p>
                   </div>
 
-                  {/* Amount input */}
                   <input
                     type="number"
                     min="0"
@@ -174,12 +225,19 @@ export default function Wallet() {
                         : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-cyan-500'}`}
                   />
 
-                  {/* Subtotal */}
                   <div className="w-32 text-right">
                     <p className={`font-semibold text-sm ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
                       ${subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </p>
                   </div>
+
+                  <button
+                    onClick={() => removeCoin(coin.symbol)}
+                    className="w-7 h-7 flex items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-red-500 hover:text-white text-gray-500 dark:text-gray-400 text-xs font-bold transition"
+                    title="Remove coin"
+                  >
+                    ✕
+                  </button>
                 </div>
               );
             })}
@@ -203,6 +261,78 @@ export default function Wallet() {
           </button>
         </div>
       </div>
+
+      {/* Add Coin Modal */}
+      {showModal && (
+        <div
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowModal(false); }}
+        >
+          <div className={`w-full max-w-md rounded-xl shadow-2xl p-6 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                Add Coin
+              </h2>
+              <button
+                onClick={() => setShowModal(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl leading-none"
+              >
+                ✕
+              </button>
+            </div>
+
+            <input
+              autoFocus
+              type="text"
+              placeholder="Search (e.g. BTC, ETH, SOL...)"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className={`w-full px-4 py-2 rounded-lg border mb-4 outline-none text-sm transition
+                ${isDarkMode
+                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-cyan-400'
+                  : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-400 focus:border-cyan-500'}`}
+            />
+
+            <div className="space-y-2 max-h-72 overflow-y-auto">
+              {searching ? (
+                <p className="text-center text-sm text-gray-400 py-4">Searching...</p>
+              ) : searchResults.length === 0 ? (
+                <p className="text-center text-sm text-gray-400 py-4">
+                  {searchQuery ? 'No coins found' : 'Start typing to search'}
+                </p>
+              ) : (
+                searchResults.map((coin) => {
+                  const alreadyAdded = !!coins.find((c) => c.symbol === coin.symbol);
+                  return (
+                    <div
+                      key={coin.symbol}
+                      className={`flex items-center gap-3 px-3 py-2 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}
+                    >
+                      <CoinIcon coin={coin} />
+                      <div className="flex-1 min-w-0">
+                        <p className={`font-semibold text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                          {coin.name}
+                        </p>
+                        <p className="text-xs text-gray-400">{coin.symbol}</p>
+                      </div>
+                      <button
+                        disabled={alreadyAdded}
+                        onClick={() => { addCoin(coin); setShowModal(false); }}
+                        className={`px-3 py-1 rounded-lg text-xs font-semibold transition flex-shrink-0
+                          ${alreadyAdded
+                            ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 cursor-default'
+                            : 'bg-cyan-500 hover:bg-cyan-600 text-white'}`}
+                      >
+                        {alreadyAdded ? 'Added' : 'Add'}
+                      </button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -2,27 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import CoinCard from '../components/CoinCard';
-
-// Small icon used in the search modal. Shows the coin image if available,
-// or a lettered circle fallback if the image fails to load.
-const ModalCoinIcon = ({ coin }) => {
-  const [failed, setFailed] = useState(false);
-  if (failed) {
-    return (
-      <div className="w-8 h-8 rounded-full bg-white/20 border border-gray-400/30 flex items-center justify-center flex-shrink-0">
-        <span className="text-xs font-bold text-gray-600 dark:text-gray-300">{coin.name.slice(0, 3)}</span>
-      </div>
-    );
-  }
-  return (
-    <img
-      src={coin.image}
-      alt={coin.name}
-      className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-      onError={() => setFailed(true)}
-    />
-  );
-};
+import CoinIcon from '../components/CoinIcon';
 
 const Dashboard = () => {
   const [coins, setCoins] = useState([]);
@@ -223,7 +203,7 @@ const Dashboard = () => {
                       key={coin.symbol}
                       className={`flex items-center gap-3 px-3 py-2 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}
                     >
-                      <ModalCoinIcon coin={coin} />
+                      <CoinIcon coin={coin} />
                       <div className="flex-1 min-w-0">
                         <p className={`font-semibold text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                           {coin.name}
