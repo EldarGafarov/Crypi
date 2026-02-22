@@ -10,13 +10,13 @@ export default function About() {
     {
       name: 'Ben Zacai',
       linkedin: 'https://www.linkedin.com/in/ben-zakai/',
-      image: 'https://media.licdn.com/dms/image/v2/D4E03AQENExVjJyT-5g/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1675891722883?e=1740009600&v=beta&t=wRqpBvOTfjDpHX_2946adpIroxPGUGfUUE-OjZn_V_o',
+      image: 'https://res.cloudinary.com/dz7qpc3nu/image/upload/v1771779694/ben_rigidc.jpg',
       workplace: <>Cyber Security Software Developer <br />B.Sc Software Engineer</>,
     },
     {
       name: 'Eldar Gafarov',
       linkedin: 'https://www.linkedin.com/in/eldar-gafarov/',
-      image: 'https://media.licdn.com/dms/image/v2/C4E03AQETFta5uSQoBA/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1657556884411?e=1740009600&v=beta&t=IK8udnOH3pP1Y5_QiZU4QaI6maZilwJKEuIiLPFoAZI',
+      image: 'https://res.cloudinary.com/dz7qpc3nu/image/upload/v1771779696/eldar_e5a6yk.jpg',
       workplace: <>Software Developer <br />B.Sc Software Engineer </>,
     },
   ];

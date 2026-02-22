@@ -20,7 +20,7 @@ export default function StudentCard({ name, linkedin, image, workplace }) {
         <img
           src={image}
           alt={`${name}'s profile`}
-          className="w-24 h-24 rounded-full mx-auto mb-4 border-2 border-white"
+          className="w-24 h-24 rounded-full mx-auto mb-4 border-2 border-white object-cover"
         />
         <h2
           className={`text-xl font-semibold text-center mb-2
