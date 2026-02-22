@@ -37,7 +37,6 @@ export default function Register() {
 
     if (!res.ok) return setError(data.error);
     login(data.user);
-    router.push('/wallet');
   };
 
   return (
@@ -64,6 +63,8 @@ export default function Register() {
               value={form.username}
               onChange={handleChange}
               placeholder="Enter username"
+              minLength={3}
+              maxLength={30}
               className={`w-full px-4 py-2 rounded-lg border outline-none transition
                 ${isDarkMode
                   ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-cyan-400'
@@ -98,6 +99,7 @@ export default function Register() {
               value={form.password}
               onChange={handleChange}
               placeholder="Min. 6 characters"
+              minLength={6}
               className={`w-full px-4 py-2 rounded-lg border outline-none transition
                 ${isDarkMode
                   ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-cyan-400'
