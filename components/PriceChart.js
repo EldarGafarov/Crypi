@@ -150,8 +150,7 @@ const PriceChart = ({ symbol }) => {
           // Recompute SMAs with the new candle included
           const sma7  = computeSMA(next, 7);
           const sma25 = computeSMA(next, 25);
-          next.forEach((c, i) => { c.sma7 = sma7[i]; c.sma25 = sma25[i]; });
-          return next;
+          return next.map((c, i) => ({ ...c, sma7: sma7[i], sma25: sma25[i] }));
         });
         setError(null);
       };

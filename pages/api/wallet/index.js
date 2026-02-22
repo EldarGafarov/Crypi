@@ -1,12 +1,9 @@
 import { connectToDatabase } from '../../../lib/mongodb';
 import { getUserFromRequest } from '../../../lib/auth';
 
-// Whitelist of allowed coin symbols — only these can be saved to the wallet.
-// This prevents users from sending arbitrary data to the server by modifying the request.
-const VALID_SYMBOLS = [
-  'BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'ADAUSDT', 'SOLUSDT',
-  'XRPUSDT', 'DOGEUSDT', 'LTCUSDT', 'XLMUSDT', 'DOTUSDT',
-];
+// Validates that a symbol is a real-looking Binance USDT pair (uppercase letters/numbers, ends in USDT).
+// This replaced the old hardcoded whitelist so any coin the user adds to their dashboard can also be tracked in their wallet.
+const isValidSymbol = (symbol) => typeof symbol === 'string' && /^[A-Z0-9]+USDT$/.test(symbol);
 
 export default async function handler(req, res) {
   // Security check: verify the JWT cookie before doing anything.
@@ -34,7 +31,7 @@ export default async function handler(req, res) {
     // 1. Filter out any coin symbols not in our whitelist
     // 2. Force amounts to be valid non-negative numbers
     const sanitized = holdings
-      .filter((h) => VALID_SYMBOLS.includes(h.symbol))
+      .filter((h) => isValidSymbol(h.symbol))
       .map((h) => ({
         symbol: h.symbol,
         amount: Math.max(0, parseFloat(h.amount) || 0),
