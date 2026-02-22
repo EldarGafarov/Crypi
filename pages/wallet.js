@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import CoinIcon from '../components/CoinIcon';
@@ -165,6 +166,15 @@ export default function Wallet() {
     <div className={`min-h-screen px-4 py-8 transition-colors duration-200
       ${isDarkMode ? 'bg-gradient-to-r from-gray-800 via-gray-900 to-black' : 'bg-white'}`}>
       <div className="max-w-4xl mx-auto">
+
+          {/* Go to Dashboard */}
+        <div className="mb-6">
+          <Link href="/dashboard">
+            <span className="inline-block px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-600 text-white font-semibold text-sm transition cursor-pointer">
+              ← Go to Dashboard
+            </span>
+          </Link>
+        </div>
 
         {/* Total Value Banner */}
         <div className={`mb-8 p-6 rounded-xl shadow-xl text-center

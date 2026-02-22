@@ -37,7 +37,6 @@ export default function Login() {
 
     if (!res.ok) return setError(data.error);
     login(data.user);
-    router.push('/wallet');
   };
 
   return (

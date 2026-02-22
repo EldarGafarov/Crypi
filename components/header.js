@@ -68,6 +68,14 @@ export default function Header() {
           </>
         )}
 
+        {!loading && !user && (
+          <Link href="/login">
+            <span className="text-sm font-medium px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-600 text-white transition cursor-pointer">
+              Login
+            </span>
+          </Link>
+        )}
+
         {/* Theme toggle button */}
         <button
           onClick={toggleDarkMode}
