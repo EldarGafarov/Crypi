@@ -17,21 +17,23 @@ export default async function handler(req, res) {
 
   const { db } = await connectToDatabase();
 
-  // Look up the user by email (always lowercase for consistency)
   const user = await db.collection('users').findOne({ email: email.toLowerCase() });
 
-  // Always run bcrypt.compare even if the user was not found (using DUMMY_HASH as fallback).
-  // This prevents "timing attacks" — where an attacker can tell if an email exists
-  // just because the server responds faster when skipping the bcrypt check.
+  // Always run bcrypt.compare even if the user was not found (timing attack prevention)
   const passwordMatch = await bcrypt.compare(password, user?.passwordHash || DUMMY_HASH);
 
-  // Both conditions must be true: user exists AND password matches.
-  // We give the same generic error for both cases so attackers can't tell which one failed.
   if (!user || !passwordMatch) {
     return res.status(401).json({ error: 'Invalid email or password' });
   }
 
-  // Credentials are correct — issue a JWT cookie and return the user info
+  // Block login if the user has not verified their email yet
+  if (!user.emailVerified) {
+    return res.status(403).json({
+      error: 'Please verify your email before logging in. Check your inbox for the verification link.',
+      pendingVerification: true,
+    });
+  }
+
   const token = signToken({ userId: user._id.toString(), username: user.username });
   res.setHeader('Set-Cookie', buildCookieHeader(token));
   res.status(200).json({ user: { userId: user._id.toString(), username: user.username } });

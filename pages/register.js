@@ -5,13 +5,14 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
 export default function Register() {
-  const { user, login } = useAuth();
+  const { user } = useAuth();
   const { isDarkMode } = useTheme();
   const router = useRouter();
 
   const [form, setForm] = useState({ username: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false); // true after successful registration
 
   useEffect(() => {
     if (user) router.push('/wallet');
@@ -36,9 +37,38 @@ export default function Register() {
     setLoading(false);
 
     if (!res.ok) return setError(data.error);
-    login(data.user);
+
+    // Account created — show "check your inbox" screen instead of logging in
+    setSent(true);
   };
 
+  // ── Success screen ─────────────────────────────────────────────────────────
+  if (sent) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center px-4
+        ${isDarkMode ? 'bg-gradient-to-r from-gray-800 via-gray-900 to-black' : 'bg-white'}`}>
+        <div className={`w-full max-w-md p-8 rounded-xl shadow-xl text-center
+          ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
+          <div className="text-5xl mb-4">📧</div>
+          <h2 className="text-2xl font-bold text-cyan-400 mb-2">Check your inbox</h2>
+          <p className={`text-sm mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+            We sent a verification link to
+          </p>
+          <p className="text-cyan-400 font-semibold mb-4">{form.email}</p>
+          <p className={`text-sm mb-6 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+            Click the link in the email to activate your account. The link expires in 24 hours.
+          </p>
+          <Link href="/login">
+            <span className="inline-block px-6 py-2.5 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition cursor-pointer">
+              Go to Login
+            </span>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Registration form ──────────────────────────────────────────────────────
   return (
     <div className={`min-h-screen flex items-center justify-center px-4
       ${isDarkMode ? 'bg-gradient-to-r from-gray-800 via-gray-900 to-black' : 'bg-white'}`}>
