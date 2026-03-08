@@ -33,17 +33,37 @@ export default function Wallet() {
 
     const loadCoins = async () => {
       setCoinsLoading(true);
+
+      // 1. Fetch coin list
+      let coinList = [];
       const res = await fetch('/api/coins/user');
       const data = await res.json();
 
       if (data.coins && data.coins.length > 0) {
-        setCoins(data.coins);
+        coinList = data.coins;
       } else {
         // First visit: seed with top 10
         const topRes = await fetch('/api/coins/top');
         const topData = await topRes.json();
-        setCoins(topData.coins || []);
+        coinList = topData.coins || [];
       }
+
+      // 2. Fetch snapshot prices before rendering so values are correct on first paint.
+      //    WebSocket will keep them live after this.
+      if (coinList.length > 0) {
+        try {
+          const symbols = JSON.stringify(coinList.map((c) => c.symbol));
+          const priceRes = await fetch(`https://api.binance.com/api/v3/ticker/price?symbols=${symbols}`);
+          const priceData = await priceRes.json();
+          const priceMap = {};
+          priceData.forEach((d) => { priceMap[d.symbol] = parseFloat(d.price); });
+          setPrices(priceMap);
+        } catch (e) {
+          // REST failed — WebSocket will populate prices as trades arrive
+        }
+      }
+
+      setCoins(coinList);
       setCoinsLoading(false);
     };
 
@@ -208,10 +228,10 @@ export default function Wallet() {
               const subtotal = amount * price;
 
               return (
-                <div key={coin.symbol} className="flex items-center gap-4 px-6 py-4">
+                <div key={coin.symbol} className="flex items-center gap-2 sm:gap-4 px-3 sm:px-6 py-4">
                   <CoinIcon coin={coin} size="lg" />
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-800 dark:text-white">
+                    <p className="font-semibold text-gray-800 dark:text-white truncate">
                       {coin.name}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -226,13 +246,13 @@ export default function Wallet() {
                     value={holdings[coin.symbol] || ''}
                     onChange={(e) => handleAmountChange(coin.symbol, e.target.value)}
                     placeholder="0"
-                    className="w-28 px-3 py-1.5 rounded-lg border text-right outline-none transition text-sm
+                    className="w-20 sm:w-28 px-2 sm:px-3 py-1.5 rounded-lg border text-right outline-none transition text-sm
                       bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600
                       text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500
                       focus:border-cyan-500 dark:focus:border-cyan-400"
                   />
 
-                  <div className="w-32 text-right">
+                  <div className="w-20 sm:w-32 text-right">
                     <p className="font-semibold text-sm text-gray-800 dark:text-white">
                       ${subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </p>

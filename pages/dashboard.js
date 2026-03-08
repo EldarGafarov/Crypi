@@ -24,24 +24,42 @@ const Dashboard = () => {
     const loadCoins = async () => {
       setCoinsLoading(true);
 
+      // 1. Fetch coin list
+      let coinList = [];
       if (!user) {
         const res = await fetch('/api/coins/top');
         const data = await res.json();
-        setCoins(data.coins || []);
+        coinList = data.coins || [];
       } else {
         const res = await fetch('/api/coins/user');
         const data = await res.json();
 
         if (data.coins && data.coins.length > 0) {
-          setCoins(data.coins);
+          coinList = data.coins;
         } else {
           // First visit: seed with top 10 so the dashboard isn't empty
           const topRes = await fetch('/api/coins/top');
           const topData = await topRes.json();
-          setCoins(topData.coins || []);
+          coinList = topData.coins || [];
         }
       }
 
+      // 2. Fetch snapshot prices before rendering so coin cards show correct values immediately.
+      //    WebSocket will keep them live after this.
+      if (coinList.length > 0) {
+        try {
+          const symbols = JSON.stringify(coinList.map((c) => c.symbol));
+          const priceRes = await fetch(`https://api.binance.com/api/v3/ticker/price?symbols=${symbols}`);
+          const priceData = await priceRes.json();
+          const priceMap = {};
+          priceData.forEach((d) => { priceMap[d.symbol] = parseFloat(d.price); });
+          setPrices(priceMap);
+        } catch (e) {
+          // REST failed — WebSocket will populate prices as trades arrive
+        }
+      }
+
+      setCoins(coinList);
       setCoinsLoading(false);
     };
 
