@@ -37,12 +37,13 @@ export default function Register() {
     setLoading(false);
 
     if (!res.ok) return setError(data.error);
+    if (data.warning) return setError(data.warning);
 
     // Account created — show "check your inbox" screen instead of logging in
     setSent(true);
   };
 
-  // ── Success screen ─────────────────────────────────────────────────────────
+  // Success screen 
   if (sent) {
     return (
       <div className={`min-h-screen flex items-center justify-center px-4
@@ -71,7 +72,7 @@ export default function Register() {
     );
   }
 
-  // ── Registration form ──────────────────────────────────────────────────────
+  // Registration form 
   return (
     <div className={`min-h-screen flex items-center justify-center px-4
       ${isDarkMode ? 'bg-gradient-to-r from-gray-800 via-gray-900 to-black' : 'bg-white'}`}>
