@@ -10,6 +10,7 @@ A real-time cryptocurrency dashboard with user authentication, a personal wallet
 - **Personal Wallet** — Track how many coins you hold and see your total portfolio value update live
 - **Shared Coin List** — Adding or removing a coin in the dashboard or the wallet stays in sync
 - **User Authentication** — Register with email verification (via Resend), log in with email or username, secured with JWT
+- **Price Alerts** — Set a target price (above or below) for any coin; receive a one-time email the moment the threshold is crossed
 - **Dark / Light Mode** — Toggle between themes, applied globally across the app
 
 ## Tech Stack
@@ -20,10 +21,11 @@ A real-time cryptocurrency dashboard with user authentication, a personal wallet
 | Frontend | React, Tailwind CSS |
 | Database | MongoDB |
 | Auth | JWT stored in HttpOnly cookies |
-| Email | Resend (transactional email for verification) |
+| Email | Resend (transactional email — verification + price alerts) |
 | Live Prices | Binance WebSocket API |
 | Market Data | Binance REST API + CoinGecko API |
 | Charts | Recharts |
+| Price Alert Cron | cron-job.org (free, hits `/api/cron/check-thresholds` every minute) |
 | Deployment | Vercel (Frankfurt region) |
 
 ## Pages
@@ -63,9 +65,20 @@ MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_random_secret_at_least_32_characters
 RESEND_API_KEY=your_resend_api_key
 BASE_URL=http://localhost:3000
+CRON_SECRET=your_random_cron_secret
 ```
 
-> In production (Vercel), set `BASE_URL` to your deployed URL (e.g. `https://crypi-phi.vercel.app`).
+> In production (Vercel), set `BASE_URL` to your deployed URL (e.g. `https://www.crypi.live`).
+
+#### Price alert cron job (production only)
+
+The price alert checker runs via [cron-job.org](https://cron-job.org) (free). Once deployed to Vercel:
+
+1. Create a cron job pointing to `https://www.yourdomain.com/api/cron/check-thresholds`
+2. Set it to run **every minute**
+3. Add a request header: `Authorization: Bearer <your CRON_SECRET>`
+
+The endpoint checks all active alerts against live Binance prices and sends an email via Resend when a threshold is crossed. Each alert fires once and is then deactivated.
 
 ### 4. Run the development server
 
@@ -84,3 +97,4 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - **Email verification** required on register — accounts are inactive until the link is clicked (24-hour expiry)
 - Login accepts email **or** username — both map to the same password-protected account
 - Wallet API validates coin symbols against a **server-side regex** (`/^[A-Z0-9]+USDT$/`)
+- Cron endpoint protected by a **shared secret** (`Authorization: Bearer`) — only cron-job.org (or you) can trigger it
