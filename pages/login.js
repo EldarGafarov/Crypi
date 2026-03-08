@@ -9,7 +9,7 @@ export default function Login() {
   const { isDarkMode } = useTheme();
   const router = useRouter();
 
-  const [form, setForm] = useState({ email: '', password: '' });
+  const [form, setForm] = useState({ identifier: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -55,14 +55,14 @@ export default function Login() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              Email
+              Email or Username
             </label>
             <input
-              type="email"
-              name="email"
-              value={form.email}
+              type="text"
+              name="identifier"
+              value={form.identifier}
               onChange={handleChange}
-              placeholder="Enter email"
+              placeholder="Enter email or username"
               className={`w-full px-4 py-2 rounded-lg border outline-none transition
                 ${isDarkMode
                   ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-cyan-400'

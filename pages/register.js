@@ -37,12 +37,13 @@ export default function Register() {
     setLoading(false);
 
     if (!res.ok) return setError(data.error);
+    if (data.warning) return setError(data.warning);
 
     // Account created — show "check your inbox" screen instead of logging in
     setSent(true);
   };
 
-  // ── Success screen ─────────────────────────────────────────────────────────
+  // Success screen 
   if (sent) {
     return (
       <div className={`min-h-screen flex items-center justify-center px-4
@@ -55,8 +56,11 @@ export default function Register() {
             We sent a verification link to
           </p>
           <p className="text-cyan-400 font-semibold mb-4">{form.email}</p>
-          <p className={`text-sm mb-6 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+          <p className={`text-sm mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
             Click the link in the email to activate your account. The link expires in 24 hours.
+          </p>
+          <p className={`text-xs mb-6 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+            Can't find it? Check your <strong>spam or junk folder</strong>.
           </p>
           <Link href="/login">
             <span className="inline-block px-6 py-2.5 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition cursor-pointer">
@@ -68,7 +72,7 @@ export default function Register() {
     );
   }
 
-  // ── Registration form ──────────────────────────────────────────────────────
+  // Registration form 
   return (
     <div className={`min-h-screen flex items-center justify-center px-4
       ${isDarkMode ? 'bg-gradient-to-r from-gray-800 via-gray-900 to-black' : 'bg-white'}`}>

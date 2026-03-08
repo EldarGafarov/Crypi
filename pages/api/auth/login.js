@@ -2,31 +2,33 @@ import { connectToDatabase } from '../../../lib/mongodb';
 import { signToken, buildCookieHeader } from '../../../lib/auth';
 import bcrypt from 'bcryptjs';
 
-// A fake bcrypt hash used as a decoy when the email doesn't exist in the database.
-// This ensures the login always takes the same amount of time whether the email exists or not,
-// preventing attackers from figuring out which emails are registered by measuring response time.
 const DUMMY_HASH = '$2b$12$invalidhashfortimingprotection0000000000000000';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { email, password } = req.body;
+  const { identifier, password } = req.body; // identifier = email or username
 
-  if (!email || !password)
-    return res.status(400).json({ error: 'Email and password are required' });
+  if (!identifier || !password)
+    return res.status(400).json({ error: 'Email/username and password are required' });
 
   const { db } = await connectToDatabase();
 
-  const user = await db.collection('users').findOne({ email: email.toLowerCase() });
+  // Look up by email (lowercase) OR by username
+  const isEmail = identifier.includes('@');
+  const user = await db.collection('users').findOne(
+    isEmail
+      ? { email: identifier.toLowerCase() }
+      : { username: identifier }
+  );
 
-  // Always run bcrypt.compare even if the user was not found (timing attack prevention)
+  // Always run bcrypt even if user not found (timing attack prevention)
   const passwordMatch = await bcrypt.compare(password, user?.passwordHash || DUMMY_HASH);
 
   if (!user || !passwordMatch) {
-    return res.status(401).json({ error: 'Invalid email or password' });
+    return res.status(401).json({ error: 'Invalid credentials' });
   }
 
-  // Block login if the user has not verified their email yet
   if (!user.emailVerified) {
     return res.status(403).json({
       error: 'Please verify your email before logging in. Check your inbox for the verification link.',
