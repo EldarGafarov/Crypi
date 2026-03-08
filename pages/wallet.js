@@ -4,6 +4,25 @@ import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
 import CoinIcon from '../components/CoinIcon';
 
+function BellIcon({ active }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill={active ? 'currentColor' : 'none'}
+      stroke="currentColor"
+      strokeWidth={active ? 0 : 1.8}
+      className="w-4 h-4"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+      />
+    </svg>
+  );
+}
+
 export default function Wallet() {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -18,6 +37,15 @@ export default function Wallet() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
+
+  // Alert state
+  const [alerts, setAlerts] = useState([]);
+  const [alertModal, setAlertModal] = useState(null); // coin object or null
+  const [alertPrice, setAlertPrice] = useState('');
+  const [alertDirection, setAlertDirection] = useState('above');
+  const [alertSaving, setAlertSaving] = useState(false);
+  const [alertError, setAlertError] = useState('');
+
   const wsRef = useRef(null);
   const searchTimer = useRef(null);
 
@@ -150,6 +178,50 @@ export default function Wallet() {
     await saveCoinList(newCoins);
   };
 
+  // Load active alerts
+  useEffect(() => {
+    if (!user) return;
+    fetch('/api/alerts')
+      .then((r) => r.json())
+      .then((data) => setAlerts(data.alerts || []));
+  }, [user]);
+
+  const openAlertModal = (coin) => {
+    setAlertModal(coin);
+    setAlertPrice('');
+    setAlertDirection('above');
+    setAlertError('');
+  };
+
+  const createAlert = async () => {
+    if (!alertModal) return;
+    const price = parseFloat(alertPrice);
+    if (!price || price <= 0) {
+      setAlertError('Enter a valid price above 0');
+      return;
+    }
+    setAlertSaving(true);
+    setAlertError('');
+    const res = await fetch('/api/alerts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ symbol: alertModal.symbol, targetPrice: price, direction: alertDirection }),
+    });
+    const data = await res.json();
+    setAlertSaving(false);
+    if (!res.ok) {
+      setAlertError(data.error || 'Failed to create alert');
+      return;
+    }
+    setAlerts((prev) => [data.alert, ...prev]);
+    setAlertPrice('');
+  };
+
+  const deleteAlert = async (id) => {
+    await fetch(`/api/alerts/${id}`, { method: 'DELETE' });
+    setAlerts((prev) => prev.filter((a) => String(a._id) !== String(id)));
+  };
+
   const totalValue = coins.reduce((sum, coin) => {
     const amount = parseFloat(holdings[coin.symbol]) || 0;
     const price = prices[coin.symbol] || 0;
@@ -259,6 +331,17 @@ export default function Wallet() {
                   </div>
 
                   <button
+                    onClick={() => openAlertModal(coin)}
+                    title="Set price alert"
+                    className={`w-7 h-7 flex items-center justify-center rounded-full transition
+                      ${alerts.some((a) => a.symbol === coin.symbol)
+                        ? 'bg-cyan-500 text-white'
+                        : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-cyan-500 hover:text-white'}`}
+                  >
+                    <BellIcon active={alerts.some((a) => a.symbol === coin.symbol)} />
+                  </button>
+
+                  <button
                     onClick={() => removeCoin(coin.symbol)}
                     className="w-7 h-7 flex items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-red-500 hover:text-white text-gray-500 dark:text-gray-400 text-xs font-bold transition"
                     title="Remove coin"
@@ -288,6 +371,110 @@ export default function Wallet() {
           </button>
         </div>
       </div>
+
+      {/* Price Alert Modal */}
+      {alertModal && (
+        <div
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setAlertModal(null); }}
+        >
+          <div className="w-full max-w-md rounded-xl shadow-2xl p-6 bg-white dark:bg-gray-800">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                Price Alerts — {alertModal.name}
+              </h2>
+              <button
+                onClick={() => setAlertModal(null)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl leading-none"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Existing alerts for this coin */}
+            {alerts.filter((a) => a.symbol === alertModal.symbol).length > 0 && (
+              <div className="mb-4 space-y-2">
+                <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                  Active alerts
+                </p>
+                {alerts
+                  .filter((a) => a.symbol === alertModal.symbol)
+                  .map((a) => (
+                    <div
+                      key={String(a._id)}
+                      className="flex items-center justify-between px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-700"
+                    >
+                      <span className="text-sm text-gray-800 dark:text-white">
+                        {a.direction === 'above' ? '↑ Above' : '↓ Below'}{' '}
+                        <strong>${a.targetPrice.toLocaleString()}</strong>
+                      </span>
+                      <button
+                        onClick={() => deleteAlert(a._id)}
+                        className="text-gray-400 hover:text-red-500 text-xs font-bold transition"
+                        title="Delete alert"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+              </div>
+            )}
+
+            {/* New alert form */}
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
+              New alert
+            </p>
+
+            <div className="flex gap-2 mb-3">
+              <button
+                onClick={() => setAlertDirection('above')}
+                className={`flex-1 py-2 rounded-lg text-sm font-semibold transition border
+                  ${alertDirection === 'above'
+                    ? 'bg-cyan-500 text-white border-cyan-500'
+                    : 'bg-transparent border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300'}`}
+              >
+                ↑ Above
+              </button>
+              <button
+                onClick={() => setAlertDirection('below')}
+                className={`flex-1 py-2 rounded-lg text-sm font-semibold transition border
+                  ${alertDirection === 'below'
+                    ? 'bg-cyan-500 text-white border-cyan-500'
+                    : 'bg-transparent border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300'}`}
+              >
+                ↓ Below
+              </button>
+            </div>
+
+            <div className="flex gap-2">
+              <input
+                type="number"
+                min="0"
+                step="any"
+                placeholder={`Target price in USD`}
+                value={alertPrice}
+                onChange={(e) => { setAlertPrice(e.target.value); setAlertError(''); }}
+                onKeyDown={(e) => e.key === 'Enter' && createAlert()}
+                className="flex-1 px-3 py-2 rounded-lg border outline-none text-sm transition
+                  bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600
+                  text-gray-900 dark:text-white placeholder-gray-400
+                  focus:border-cyan-500 dark:focus:border-cyan-400"
+              />
+              <button
+                onClick={createAlert}
+                disabled={alertSaving}
+                className="px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-600 text-white text-sm font-semibold transition disabled:opacity-50"
+              >
+                {alertSaving ? '...' : 'Set'}
+              </button>
+            </div>
+
+            {alertError && (
+              <p className="mt-2 text-xs text-red-400">{alertError}</p>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Add Coin Modal */}
       {showModal && (
