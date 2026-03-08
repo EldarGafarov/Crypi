@@ -1,8 +1,3 @@
-/**
- * ThemeProvider component manages the global theme (dark/light mode) for the app.
- * It uses localStorage to remember the user's theme preference across sessions.
- */
-
 import { createContext, useContext, useState, useEffect } from 'react';
 
 const ThemeContext = createContext();
@@ -11,10 +6,11 @@ export function ThemeProvider({ children }) {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
-    // Check localStorage on initial load If someone is on dark mode locally then itll be for him at the beggining
+    // Sync React state with whatever _document.js already applied to <html>.
+    // This runs once on mount—  it doesn't apply the class (that already happened),
+    // it just makes isDarkMode match reality so the toggle icon shows correctly.
     const savedMode = localStorage.getItem('theme');
     if (savedMode === 'dark') {
-      document.documentElement.classList.add('dark');
       setIsDarkMode(true);
     } else {
       document.documentElement.classList.remove('dark');
@@ -24,6 +20,9 @@ export function ThemeProvider({ children }) {
   const toggleDarkMode = () => {
     setIsDarkMode((prev) => {
       const newMode = !prev;
+
+      // 'dark' class on <html> is what Tailwind's darkMode: 'class' watches.
+      // Adding/removing it here instantly switches every dark: style in the app.
       if (newMode) {
         document.documentElement.classList.add('dark');
         localStorage.setItem('theme', 'dark');
@@ -31,10 +30,13 @@ export function ThemeProvider({ children }) {
         document.documentElement.classList.remove('dark');
         localStorage.setItem('theme', 'light');
       }
+
       return newMode;
     });
   };
 
+  // isDarkMode is only exposed for the toggle button icon swap (Moon vs Sun).
+  // All actual dark styling is handled by Tailwind dark: classes, not this value.
   return (
     <ThemeContext.Provider value={{ isDarkMode, toggleDarkMode }}>
       {children}

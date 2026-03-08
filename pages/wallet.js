@@ -2,12 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
 import CoinIcon from '../components/CoinIcon';
 
 export default function Wallet() {
   const { user, loading } = useAuth();
-  const { isDarkMode } = useTheme();
   const router = useRouter();
 
   const [coins, setCoins] = useState([]);
@@ -163,11 +161,11 @@ export default function Wallet() {
   if (loading || !user || coinsLoading) return null;
 
   return (
-    <div className={`min-h-screen px-4 py-8 transition-colors duration-200
-      ${isDarkMode ? 'bg-gradient-to-r from-gray-800 via-gray-900 to-black' : 'bg-white'}`}>
+    <div className="min-h-screen px-4 py-8 transition-colors duration-200
+      bg-white dark:bg-gradient-to-r dark:from-gray-800 dark:via-gray-900 dark:to-black">
       <div className="max-w-4xl mx-auto">
 
-          {/* Go to Dashboard */}
+        {/* Go to Dashboard */}
         <div className="mb-6">
           <Link href="/dashboard">
             <span className="inline-block px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-600 text-white font-semibold text-sm transition cursor-pointer">
@@ -177,23 +175,22 @@ export default function Wallet() {
         </div>
 
         {/* Total Value Banner */}
-        <div className={`mb-8 p-6 rounded-xl shadow-xl text-center
-          ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
-          <p className={`text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+        <div className="mb-8 p-6 rounded-xl shadow-xl text-center bg-gray-50 dark:bg-gray-800">
+          <p className="text-sm font-medium mb-1 text-gray-500 dark:text-gray-400">
             Total Portfolio Value
           </p>
           <p className="text-4xl font-bold text-cyan-400">
             ${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
-          <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+          <p className="text-xs mt-1 text-gray-400 dark:text-gray-500">
             Updates in real time
           </p>
         </div>
 
         {/* Holdings Table */}
-        <div className={`rounded-xl shadow-xl overflow-hidden ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
-          <div className={`px-6 py-4 border-b flex items-center justify-between ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-            <h2 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+        <div className="rounded-xl shadow-xl overflow-hidden bg-gray-50 dark:bg-gray-800">
+          <div className="px-6 py-4 border-b flex items-center justify-between border-gray-200 dark:border-gray-700">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
               My Holdings
             </h2>
             <button
@@ -214,10 +211,10 @@ export default function Wallet() {
                 <div key={coin.symbol} className="flex items-center gap-4 px-6 py-4">
                   <CoinIcon coin={coin} size="lg" />
                   <div className="flex-1 min-w-0">
-                    <p className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+                    <p className="font-semibold text-gray-800 dark:text-white">
                       {coin.name}
                     </p>
-                    <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
                       {price ? `$${price.toFixed(2)}` : 'Loading...'}
                     </p>
                   </div>
@@ -229,14 +226,14 @@ export default function Wallet() {
                     value={holdings[coin.symbol] || ''}
                     onChange={(e) => handleAmountChange(coin.symbol, e.target.value)}
                     placeholder="0"
-                    className={`w-28 px-3 py-1.5 rounded-lg border text-right outline-none transition text-sm
-                      ${isDarkMode
-                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500 focus:border-cyan-400'
-                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-cyan-500'}`}
+                    className="w-28 px-3 py-1.5 rounded-lg border text-right outline-none transition text-sm
+                      bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600
+                      text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500
+                      focus:border-cyan-500 dark:focus:border-cyan-400"
                   />
 
                   <div className="w-32 text-right">
-                    <p className={`font-semibold text-sm ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+                    <p className="font-semibold text-sm text-gray-800 dark:text-white">
                       ${subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </p>
                   </div>
@@ -278,9 +275,9 @@ export default function Wallet() {
           className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
           onClick={(e) => { if (e.target === e.currentTarget) setShowModal(false); }}
         >
-          <div className={`w-full max-w-md rounded-xl shadow-2xl p-6 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+          <div className="w-full max-w-md rounded-xl shadow-2xl p-6 bg-white dark:bg-gray-800">
             <div className="flex items-center justify-between mb-4">
-              <h2 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">
                 Add Coin
               </h2>
               <button
@@ -297,10 +294,10 @@ export default function Wallet() {
               placeholder="Search (e.g. BTC, ETH, SOL...)"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className={`w-full px-4 py-2 rounded-lg border mb-4 outline-none text-sm transition
-                ${isDarkMode
-                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-cyan-400'
-                  : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-400 focus:border-cyan-500'}`}
+              className="w-full px-4 py-2 rounded-lg border mb-4 outline-none text-sm transition
+                bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600
+                text-gray-900 dark:text-white placeholder-gray-400
+                focus:border-cyan-500 dark:focus:border-cyan-400"
             />
 
             <div className="space-y-2 max-h-72 overflow-y-auto">
@@ -316,11 +313,11 @@ export default function Wallet() {
                   return (
                     <div
                       key={coin.symbol}
-                      className={`flex items-center gap-3 px-3 py-2 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}
+                      className="flex items-center gap-3 px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-700"
                     >
                       <CoinIcon coin={coin} />
                       <div className="flex-1 min-w-0">
-                        <p className={`font-semibold text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                        <p className="font-semibold text-sm text-gray-900 dark:text-white">
                           {coin.name}
                         </p>
                         <p className="text-xs text-gray-400">{coin.symbol}</p>
