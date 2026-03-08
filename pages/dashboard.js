@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef } from 'react';
-import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import CoinCard from '../components/CoinCard';
 import CoinIcon from '../components/CoinIcon';
@@ -12,7 +11,6 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
-  const { isDarkMode } = useTheme();
   const { user, loading: authLoading } = useAuth();
   const wsRef = useRef(null);
   const searchTimer = useRef(null);
@@ -159,11 +157,11 @@ const Dashboard = () => {
           className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
           onClick={(e) => { if (e.target === e.currentTarget) setShowModal(false); }}
         >
-          <div className={`w-full max-w-md rounded-xl shadow-2xl p-6 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+          <div className="w-full max-w-md rounded-xl shadow-2xl p-6 bg-white dark:bg-gray-800">
 
             {/* Modal header */}
             <div className="flex items-center justify-between mb-4">
-              <h2 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">
                 Add Coin
               </h2>
               <button
@@ -181,10 +179,10 @@ const Dashboard = () => {
               placeholder="Search (e.g. BTC, ETH, SOL...)"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className={`w-full px-4 py-2 rounded-lg border mb-4 outline-none text-sm transition
-                ${isDarkMode
-                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-cyan-400'
-                  : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-400 focus:border-cyan-500'}`}
+              className="w-full px-4 py-2 rounded-lg border mb-4 outline-none text-sm transition
+                bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600
+                text-gray-900 dark:text-white placeholder-gray-400
+                focus:border-cyan-500 dark:focus:border-cyan-400"
             />
 
             {/* Results list */}
@@ -201,11 +199,11 @@ const Dashboard = () => {
                   return (
                     <div
                       key={coin.symbol}
-                      className={`flex items-center gap-3 px-3 py-2 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}
+                      className="flex items-center gap-3 px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-700"
                     >
                       <CoinIcon coin={coin} />
                       <div className="flex-1 min-w-0">
-                        <p className={`font-semibold text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                        <p className="font-semibold text-sm text-gray-900 dark:text-white">
                           {coin.name}
                         </p>
                         <p className="text-xs text-gray-400">{coin.symbol}</p>

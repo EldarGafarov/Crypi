@@ -12,6 +12,8 @@ import { useAuth } from '../context/AuthContext';
 import { useRouter } from 'next/router';
 
 export default function Header() {
+  // isDarkMode is only needed here to swap the Moon/Sun icon.
+  // All dark styling in this component is handled by Tailwind dark: classes.
   const { isDarkMode, toggleDarkMode } = useTheme();
   const { user, loading, logout } = useAuth();
   const router = useRouter();
@@ -32,23 +34,19 @@ export default function Header() {
   };
 
   return (
-    <header className={`header p-4 flex justify-between items-center shadow-md
-      ${isDarkMode
-        ? 'bg-gradient-to-r from-gray-800 via-gray-900 to-black'
-        : 'bg-white'}`}>
+    <header className="header p-4 flex justify-between items-center shadow-md
+      bg-white dark:bg-gradient-to-r dark:from-gray-800 dark:via-gray-900 dark:to-black">
       {/* Left - Home icon */}
       <div>
         {router.pathname !== '/' && (
           <Link href="/">
-            <IoHomeSharp size={32} className={isDarkMode ? 'text-white' : 'text-black'} />
+            <IoHomeSharp size={32} className="text-black dark:text-white" />
           </Link>
         )}
       </div>
 
       {/* Center - Title */}
-      <h1 className={`flex-1 text-2xl font-bold text-center ${
-        isDarkMode ? 'text-white' : 'text-gray-800'
-      }`}>
+      <h1 className="flex-1 text-2xl font-bold text-center text-gray-800 dark:text-white">
         {getPageTitle()}
       </h1>
 
@@ -57,7 +55,7 @@ export default function Header() {
         {!loading && user && (
           <>
             <Link href="/wallet">
-              <IoWalletOutline size={28} className={isDarkMode ? 'text-white' : 'text-black'} />
+              <IoWalletOutline size={28} className="text-black dark:text-white" />
             </Link>
             <button
               onClick={logout}
@@ -79,19 +77,15 @@ export default function Header() {
         {/* Theme toggle button */}
         <button
           onClick={toggleDarkMode}
-          className={`relative flex items-center w-24 h-12 rounded-full p-1 transition-colors duration-300 ease-in-out
-            ${isDarkMode
-              ? 'bg-gradient-to-r from-gray-800 via-gray-900 to-black'
-              : 'bg-gradient-to-r from-blue-200 via-blue-800 to-white-300'
-            }`}
+          className="relative flex items-center w-24 h-12 rounded-full p-1 transition-colors duration-300 ease-in-out
+            bg-gradient-to-r from-blue-200 via-blue-800 dark:from-gray-800 dark:via-gray-900 dark:to-black"
         >
+          {/* Circle slides right in dark mode via dark:translate-x-12 */}
           <div
-            className={`relative z-10 w-10 h-10 rounded-full transform transition-transform duration-300 ease-in-out flex items-center justify-center
-              ${isDarkMode
-                ? 'translate-x-12 bg-gray-700'
-                : 'translate-x-0 bg-white'
-              }`}
+            className="relative z-10 w-10 h-10 rounded-full transform transition-transform duration-300 ease-in-out flex items-center justify-center
+              translate-x-0 bg-white dark:translate-x-12 dark:bg-gray-700"
           >
+            {/* Icon swap — the only place isDarkMode is used. Can't swap rendered elements with CSS alone. */}
             {isDarkMode ? (
               <IoMoonSharp className="w-6 h-6 text-white" />
             ) : (

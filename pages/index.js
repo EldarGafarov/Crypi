@@ -1,28 +1,24 @@
 import Link from 'next/link';
-import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 
 export default function Home() {
-  const { isDarkMode } = useTheme();
   const { user, loading } = useAuth();
-  
+
   return (
-    <div className={`min-h-screen flex flex-col justify-center items-center px-4 py-8
-      ${isDarkMode 
-        ? 'bg-gradient-to-r from-gray-800 via-gray-900 to-black'
-        : 'bg-white'}`}>
-      
+    <div className="min-h-screen flex flex-col justify-center items-center px-4 py-8
+      bg-white dark:bg-gradient-to-r dark:from-gray-800 dark:via-gray-900 dark:to-black">
+
       {/* Main content */}
       <div className="relative z-10 text-center px-6 w-full max-w-7xl">
         {/* Heading */}
-        <h1 className="text-5xl md:text-6xl font-extrabold tracking-wide mb-4 
+        <h1 className="text-5xl md:text-6xl font-extrabold tracking-wide mb-4
           text-cyan-400">
           Welcome to Crypi
         </h1>
-        
-        <p className={`text-lg md:text-xl font-light mb-8 max-w-2xl mx-auto
-          ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
-          Explore live cryptocurrency prices, market trends, and more. 
+
+        <p className="text-lg md:text-xl font-light mb-8 max-w-2xl mx-auto
+          text-gray-800 dark:text-white">
+          Explore live cryptocurrency prices, market trends, and more.
           Empowering your crypto journey.
         </p>
 

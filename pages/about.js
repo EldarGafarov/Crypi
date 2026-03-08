@@ -1,11 +1,8 @@
 // pages/index.js
 import Link from 'next/link';
 import StudentCard from '../components/StudentCard';
-import { useTheme } from '../context/ThemeContext';
-
 
 export default function About() {
-  const { isDarkMode } = useTheme();
   const students = [
     {
       name: 'Ben Zacai',
@@ -20,32 +17,30 @@ export default function About() {
       workplace: <>Software Developer <br />B.Sc Software Engineer </>,
     },
   ];
-  
+
   return (
-    <div className={`min-h-screen flex flex-col justify-center items-center px-4 py-8
-      ${isDarkMode 
-        ? 'bg-gradient-to-r from-gray-800 via-gray-900 to-black'
-        : 'bg-white'}`}>
+    <div className="min-h-screen flex flex-col justify-center items-center px-4 py-8
+      bg-white dark:bg-gradient-to-r dark:from-gray-800 dark:via-gray-900 dark:to-black">
 
       {/* Main content */}
       <div className="relative z-10 text-center px-6 w-full max-w-7xl">
         {/* Heading */}
-        <h1 className="text-5xl md:text-6xl font-extrabold tracking-wide mb-4 
+        <h1 className="text-5xl md:text-6xl font-extrabold tracking-wide mb-4
           text-cyan-400">
           About Us
         </h1>
-        <p className={`text-lg md:text-xl font-light mb-8 max-w-2xl mx-auto
-          ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+        <p className="text-lg md:text-xl font-light mb-8 max-w-2xl mx-auto
+          text-gray-800 dark:text-white">
           We are a team of 2 students from Braude College of Engineering: <br />Ben Zacai & Eldar Gafarov.
         </p>
-  
-        <p className={`text-lg md:text-xl font-light mb-8 max-w-3xl mx-auto
-          ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+
+        <p className="text-lg md:text-xl font-light mb-8 max-w-3xl mx-auto
+          text-gray-800 dark:text-white">
           This application was built as part of our Web Technologies course project. It provides live cryptocurrency prices, historical graphs, and detailed information about various coins.
-        </p>  
-        
-        <p className={`text-lg md:text-xl font-light mb-8 max-w-2xl mx-auto
-          ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+        </p>
+
+        <p className="text-lg md:text-xl font-light mb-8 max-w-2xl mx-auto
+          text-gray-800 dark:text-white">
           Meet the team behind the project:
         </p>
 
