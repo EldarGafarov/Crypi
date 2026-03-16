@@ -6,7 +6,7 @@ A real-time cryptocurrency dashboard with user authentication, a personal wallet
 
 - **Live Price Dashboard** — Streams real-time prices via Binance WebSocket for each user's personal coin list
 - **Dynamic Coin List** — Logged-in users can add or remove any coin; guests see the top 10 by 24h trading volume
-- **Coin Detail Pages** — Rich market data per coin: live price, 24h stats, market cap, all-time high, circulating supply, and a candlestick chart with SMA indicators
+- **Coin Detail Pages** — Rich market data per coin: live price, 24h stats, market cap, all-time high, circulating supply, and a candlestick chart with customisable SMA indicators (add/remove lines, choose any period, pick a colour)
 - **Personal Wallet** — Track how many coins you hold and see your total portfolio value update live
 - **Shared Coin List** — Adding or removing a coin in the dashboard or the wallet stays in sync
 - **User Authentication** — Register with email verification (via Resend), log in with email or username, secured with JWT
@@ -24,7 +24,7 @@ A real-time cryptocurrency dashboard with user authentication, a personal wallet
 | Email | Resend (transactional email — verification + price alerts) |
 | Live Prices | Binance WebSocket API |
 | Market Data | Binance REST API + CoinGecko API |
-| Charts | Recharts |
+| Charts | TradingView Lightweight Charts |
 | Price Alert Cron | cron-job.org (free, hits `/api/cron/check-thresholds` every minute) |
 | Deployment | Vercel (Frankfurt region) |
 
