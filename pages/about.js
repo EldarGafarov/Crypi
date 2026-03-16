@@ -5,16 +5,16 @@ import StudentCard from '../components/StudentCard';
 export default function About() {
   const students = [
     {
-      name: 'Ben Zacai',
-      linkedin: 'https://www.linkedin.com/in/ben-zakai/',
-      image: 'https://res.cloudinary.com/dz7qpc3nu/image/upload/v1771779694/ben_rigidc.jpg',
-      workplace: <>Cyber Security Software Developer <br />B.Sc Software Engineer</>,
-    },
-    {
       name: 'Eldar Gafarov',
       linkedin: 'https://www.linkedin.com/in/eldar-gafarov/',
       image: 'https://res.cloudinary.com/dz7qpc3nu/image/upload/v1771779696/eldar_e5a6yk.jpg',
       workplace: <>Software Developer <br />B.Sc Software Engineer </>,
+    },
+    {
+      name: 'Ben Zacai',
+      linkedin: 'https://www.linkedin.com/in/ben-zakai/',
+      image: 'https://res.cloudinary.com/dz7qpc3nu/image/upload/v1771779694/ben_rigidc.jpg',
+      workplace: <>Cyber Security Software Developer <br />B.Sc Software Engineer</>,
     },
   ];
 

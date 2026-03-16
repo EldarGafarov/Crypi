@@ -35,18 +35,18 @@ export default function Header() {
 
   return (
     <header className="header p-4 flex justify-between items-center shadow-md
-      bg-white dark:bg-gradient-to-r dark:from-gray-800 dark:via-gray-900 dark:to-black">
+      bg-gradient-to-r from-cyan-500 to-blue-600 dark:from-gray-800 dark:via-gray-900 dark:to-black">
       {/* Left - Home icon */}
       <div>
         {router.pathname !== '/' && (
           <Link href="/">
-            <IoHomeSharp size={32} className="text-black dark:text-white" />
+            <IoHomeSharp size={32} className="text-white" />
           </Link>
         )}
       </div>
 
       {/* Center - Title */}
-      <h1 className="flex-1 text-2xl font-bold text-center text-gray-800 dark:text-white">
+      <h1 className="flex-1 text-2xl font-bold text-center text-white">
         {getPageTitle()}
       </h1>
 
@@ -55,7 +55,7 @@ export default function Header() {
         {!loading && user && (
           <>
             <Link href="/wallet">
-              <IoWalletOutline size={28} className="text-black dark:text-white" />
+              <IoWalletOutline size={28} className="text-white" />
             </Link>
             <button
               onClick={logout}

@@ -1,8 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
 import CoinIcon from '../components/CoinIcon';
+import AddCoinModal from '../components/AddCoinModal';
+import { useCoinsWithPrices } from '../hooks/useCoinsWithPrices';
 
 function BellIcon({ active }) {
   return (
@@ -26,17 +28,12 @@ function BellIcon({ active }) {
 export default function Wallet() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const { coins, prices, loading: coinsLoading, addCoin, removeCoin } = useCoinsWithPrices(user, loading);
 
-  const [coins, setCoins] = useState([]);
-  const [coinsLoading, setCoinsLoading] = useState(true);
-  const [prices, setPrices] = useState({});
   const [holdings, setHoldings] = useState({});
   const [saveStatus, setSaveStatus] = useState('');
   const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [searching, setSearching] = useState(false);
 
   // Alert state
   const [alerts, setAlerts] = useState([]);
@@ -46,57 +43,10 @@ export default function Wallet() {
   const [alertSaving, setAlertSaving] = useState(false);
   const [alertError, setAlertError] = useState('');
 
-  const wsRef = useRef(null);
-  const searchTimer = useRef(null);
-
   // Auth guard
   useEffect(() => {
     if (!loading && !user) router.push('/login');
   }, [user, loading]);
-
-  // Load the user's coin list — same source as the dashboard (/api/coins/user)
-  // so adding/removing coins here also updates the dashboard.
-  useEffect(() => {
-    if (!user) return;
-
-    const loadCoins = async () => {
-      setCoinsLoading(true);
-
-      // 1. Fetch coin list
-      let coinList = [];
-      const res = await fetch('/api/coins/user');
-      const data = await res.json();
-
-      if (data.coins && data.coins.length > 0) {
-        coinList = data.coins;
-      } else {
-        // First visit: seed with top 10
-        const topRes = await fetch('/api/coins/top');
-        const topData = await topRes.json();
-        coinList = topData.coins || [];
-      }
-
-      // 2. Fetch snapshot prices before rendering so values are correct on first paint.
-      //    WebSocket will keep them live after this.
-      if (coinList.length > 0) {
-        try {
-          const symbols = JSON.stringify(coinList.map((c) => c.symbol));
-          const priceRes = await fetch(`https://api.binance.com/api/v3/ticker/price?symbols=${symbols}`);
-          const priceData = await priceRes.json();
-          const priceMap = {};
-          priceData.forEach((d) => { priceMap[d.symbol] = parseFloat(d.price); });
-          setPrices(priceMap);
-        } catch (e) {
-          // REST failed — WebSocket will populate prices as trades arrive
-        }
-      }
-
-      setCoins(coinList);
-      setCoinsLoading(false);
-    };
-
-    loadCoins();
-  }, [user]);
 
   // Load saved holding amounts
   useEffect(() => {
@@ -112,72 +62,6 @@ export default function Wallet() {
       });
   }, [user]);
 
-  // WebSocket: reconnects whenever the coin list changes
-  useEffect(() => {
-    if (coins.length === 0) return;
-
-    if (wsRef.current) wsRef.current.close();
-
-    const streams = coins.map((c) => `${c.symbol.toLowerCase()}@trade`).join('/');
-    const ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
-    wsRef.current = ws;
-
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      setPrices((prev) => ({ ...prev, [data.data.s]: parseFloat(data.data.p) }));
-    };
-
-    ws.onerror = (err) => console.error('WebSocket error:', err);
-
-    return () => ws.close();
-  }, [coins]);
-
-  // Debounced search for the Add Coin modal
-  useEffect(() => {
-    if (!showModal) return;
-    clearTimeout(searchTimer.current);
-    searchTimer.current = setTimeout(async () => {
-      setSearching(true);
-      const res = await fetch(`/api/coins/search?q=${encodeURIComponent(searchQuery)}`);
-      const data = await res.json();
-      setSearchResults(data.coins || []);
-      setSearching(false);
-    }, 300);
-  }, [searchQuery, showModal]);
-
-  const openModal = () => {
-    setSearchQuery('');
-    setSearchResults([]);
-    setShowModal(true);
-  };
-
-  // Persists the coin list to /api/coins/user — shared with the dashboard
-  const saveCoinList = async (newCoins) => {
-    await fetch('/api/coins/user', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ coins: newCoins }),
-    });
-  };
-
-  const addCoin = async (coin) => {
-    if (coins.find((c) => c.symbol === coin.symbol)) return;
-    const newCoins = [...coins, coin];
-    setCoins(newCoins);
-    await saveCoinList(newCoins);
-  };
-
-  const removeCoin = async (symbol) => {
-    const newCoins = coins.filter((c) => c.symbol !== symbol);
-    setCoins(newCoins);
-    setHoldings((prev) => {
-      const next = { ...prev };
-      delete next[symbol];
-      return next;
-    });
-    await saveCoinList(newCoins);
-  };
-
   // Load active alerts
   useEffect(() => {
     if (!user) return;
@@ -185,6 +69,16 @@ export default function Wallet() {
       .then((r) => r.json())
       .then((data) => setAlerts(data.alerts || []));
   }, [user]);
+
+  // Wallet's removeCoin also clears the local holdings entry
+  const handleRemoveCoin = async (symbol) => {
+    setHoldings((prev) => {
+      const next = { ...prev };
+      delete next[symbol];
+      return next;
+    });
+    await removeCoin(symbol);
+  };
 
   const openAlertModal = (coin) => {
     setAlertModal(coin);
@@ -286,7 +180,7 @@ export default function Wallet() {
               My Holdings
             </h2>
             <button
-              onClick={openModal}
+              onClick={() => setShowModal(true)}
               className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg font-semibold transition text-sm"
             >
               + Add Coin
@@ -342,7 +236,7 @@ export default function Wallet() {
                   </button>
 
                   <button
-                    onClick={() => removeCoin(coin.symbol)}
+                    onClick={() => handleRemoveCoin(coin.symbol)}
                     className="w-7 h-7 flex items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-red-500 hover:text-white text-gray-500 dark:text-gray-400 text-xs font-bold transition"
                     title="Remove coin"
                   >
@@ -451,7 +345,7 @@ export default function Wallet() {
                 type="number"
                 min="0"
                 step="any"
-                placeholder={`Target price in USD`}
+                placeholder="Target price in USD"
                 value={alertPrice}
                 onChange={(e) => { setAlertPrice(e.target.value); setAlertError(''); }}
                 onKeyDown={(e) => e.key === 'Enter' && createAlert()}
@@ -478,74 +372,11 @@ export default function Wallet() {
 
       {/* Add Coin Modal */}
       {showModal && (
-        <div
-          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
-          onClick={(e) => { if (e.target === e.currentTarget) setShowModal(false); }}
-        >
-          <div className="w-full max-w-md rounded-xl shadow-2xl p-6 bg-white dark:bg-gray-800">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-                Add Coin
-              </h2>
-              <button
-                onClick={() => setShowModal(false)}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl leading-none"
-              >
-                ✕
-              </button>
-            </div>
-
-            <input
-              autoFocus
-              type="text"
-              placeholder="Search (e.g. BTC, ETH, SOL...)"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg border mb-4 outline-none text-sm transition
-                bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600
-                text-gray-900 dark:text-white placeholder-gray-400
-                focus:border-cyan-500 dark:focus:border-cyan-400"
-            />
-
-            <div className="space-y-2 max-h-72 overflow-y-auto">
-              {searching ? (
-                <p className="text-center text-sm text-gray-400 py-4">Searching...</p>
-              ) : searchResults.length === 0 ? (
-                <p className="text-center text-sm text-gray-400 py-4">
-                  {searchQuery ? 'No coins found' : 'Start typing to search'}
-                </p>
-              ) : (
-                searchResults.map((coin) => {
-                  const alreadyAdded = !!coins.find((c) => c.symbol === coin.symbol);
-                  return (
-                    <div
-                      key={coin.symbol}
-                      className="flex items-center gap-3 px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-700"
-                    >
-                      <CoinIcon coin={coin} />
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm text-gray-900 dark:text-white">
-                          {coin.name}
-                        </p>
-                        <p className="text-xs text-gray-400">{coin.symbol}</p>
-                      </div>
-                      <button
-                        disabled={alreadyAdded}
-                        onClick={() => { addCoin(coin); setShowModal(false); }}
-                        className={`px-3 py-1 rounded-lg text-xs font-semibold transition flex-shrink-0
-                          ${alreadyAdded
-                            ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 cursor-default'
-                            : 'bg-cyan-500 hover:bg-cyan-600 text-white'}`}
-                      >
-                        {alreadyAdded ? 'Added' : 'Add'}
-                      </button>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-        </div>
+        <AddCoinModal
+          coins={coins}
+          onAdd={addCoin}
+          onClose={() => setShowModal(false)}
+        />
       )}
     </div>
   );
