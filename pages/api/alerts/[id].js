@@ -1,11 +1,13 @@
 import { connectToDatabase } from '../../../lib/mongodb';
-import { getUserFromRequest } from '../../../lib/auth';
+import { getAuthenticatedUser } from '../../../lib/auth';
 import { ObjectId } from 'mongodb';
 
 export default async function handler(req, res) {
   if (req.method !== 'DELETE') return res.status(405).end();
 
-  const user = getUserFromRequest(req);
+  const { db } = await connectToDatabase();
+
+  const user = await getAuthenticatedUser(req, db);
   if (!user) return res.status(401).json({ error: 'Not authenticated' });
 
   const { id } = req.query;
@@ -16,8 +18,6 @@ export default async function handler(req, res) {
   } catch {
     return res.status(400).json({ error: 'Invalid alert id' });
   }
-
-  const { db } = await connectToDatabase();
 
   // Only delete if it belongs to this user
   const result = await db.collection('alerts').deleteOne({

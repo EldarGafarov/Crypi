@@ -1,14 +1,14 @@
 import { connectToDatabase } from '../../../lib/mongodb';
-import { getUserFromRequest } from '../../../lib/auth';
+import { getAuthenticatedUser } from '../../../lib/auth';
 import { ObjectId } from 'mongodb';
 
 const isValidSymbol = (symbol) => typeof symbol === 'string' && /^[A-Z0-9]+USDT$/.test(symbol);
 
 export default async function handler(req, res) {
-  const user = getUserFromRequest(req);
-  if (!user) return res.status(401).json({ error: 'Not authenticated' });
-
   const { db } = await connectToDatabase();
+
+  const user = await getAuthenticatedUser(req, db);
+  if (!user) return res.status(401).json({ error: 'Not authenticated' });
 
   // GET — fetch all active (non-triggered) alerts for this user
   if (req.method === 'GET') {
