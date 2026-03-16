@@ -36,7 +36,16 @@ export default async function handler(req, res) {
     });
   }
 
-  const token = signToken({ userId: user._id.toString(), username: user.username });
+  const { token, jti } = signToken({ userId: user._id.toString(), username: user.username });
+
+  // Store the session in the DB — logout or a new login will delete it,
+  // immediately invalidating any copied token.
+  await db.collection('sessions').insertOne({
+    jti,
+    userId: user._id.toString(),
+    createdAt: new Date(),
+  });
+
   res.setHeader('Set-Cookie', buildCookieHeader(token));
   res.status(200).json({ user: { userId: user._id.toString(), username: user.username } });
 }

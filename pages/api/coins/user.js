@@ -1,13 +1,13 @@
 import { connectToDatabase } from '../../../lib/mongodb';
-import { getUserFromRequest } from '../../../lib/auth';
+import { getAuthenticatedUser } from '../../../lib/auth';
 import { getCoinImages } from '../../../lib/coinImages';
 
 export default async function handler(req, res) {
-  // Requires authentication — guests cannot save a personal coin list
-  const user = getUserFromRequest(req);
-  if (!user) return res.status(401).json({ error: 'Not authenticated' });
-
   const { db } = await connectToDatabase();
+
+  // Requires authentication — guests cannot save a personal coin list
+  const user = await getAuthenticatedUser(req, db);
+  if (!user) return res.status(401).json({ error: 'Not authenticated' });
 
   // GET — return the user's saved coin list, with images resolved fresh from CoinGecko
   if (req.method === 'GET') {
