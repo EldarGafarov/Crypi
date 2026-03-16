@@ -84,6 +84,7 @@ const PriceChart = ({ symbol }) => {
   const volRef          = useRef(null);
   const smaMapRef       = useRef({});   // { lineId: { series, period } }
   const prevCandlesRef  = useRef([]);   // detect when tvCandles actually changes vs just smaLines
+  const rollingRef      = useRef([]);   // rolling candle window kept in sync for live SMA updates
 
   const { isDarkMode } = useTheme();
 
@@ -151,9 +152,10 @@ const PriceChart = ({ symbol }) => {
     chartRef.current?.applyOptions({ timeScale: { fixRightEdge: range !== 'live' } });
   }, [range]);
 
-  // Load candle + volume data into chart 
+  // Load candle + volume data into chart
   useEffect(() => {
     if (!candleRef.current || !tvCandles.length) return;
+    rollingRef.current = [...tvCandles];   // seed rolling window for live SMA updates
     candleRef.current.setData(tvCandles);
     volRef.current.setData(
       tvCandles.map((c) => ({
@@ -210,14 +212,30 @@ const PriceChart = ({ symbol }) => {
     });
   }, [smaLines, tvCandles]);
 
-  // Live candle + volume updates (WS)
+  // Live candle + volume + SMA updates (WS)
   useEffect(() => {
     if (!liveCandle || !candleRef.current) return;
+
     candleRef.current.update(liveCandle);
     volRef.current.update({
       time:  liveCandle.time,
       value: liveCandle.volume,
       color: liveCandle.close >= liveCandle.open ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)',
+    });
+
+    // Keep rolling window in sync: update last candle (same minute) or append (new minute)
+    const rolling = rollingRef.current;
+    if (rolling.length > 0 && rolling[rolling.length - 1].time === liveCandle.time) {
+      rolling[rolling.length - 1] = liveCandle;
+    } else {
+      rolling.push(liveCandle);
+    }
+
+    // Push updated SMA value for each line
+    Object.values(smaMapRef.current).forEach(({ series, period }) => {
+      if (rolling.length < period) return;
+      const value = rolling.slice(-period).reduce((s, c) => s + c.close, 0) / period;
+      series.update({ time: liveCandle.time, value });
     });
   }, [liveCandle]);
 
