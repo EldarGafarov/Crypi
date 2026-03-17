@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { useAuth } from '../context/AuthContext';
-import CoinIcon from '../components/CoinIcon';
-import AddCoinModal from '../components/AddCoinModal';
-import { useCoinsWithPrices } from '../hooks/useCoinsWithPrices';
+import { useAuth } from '@/context/AuthContext';
+import CoinIcon from '@/components/CoinIcon';
+import AddCoinModal from '@/components/AddCoinModal';
+import { useCoinsWithPrices } from '@/hooks/useCoinsWithPrices';
 
 function BellIcon({ active }) {
   return (

@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
+import { IoTrendingUpSharp, IoFlashSharp, IoMailSharp, IoStatsChartSharp, IoNotificationsSharp, IoWalletOutline } from 'react-icons/io5';
 
 export default function Home() {
   const { user, loading } = useAuth();
@@ -13,17 +14,25 @@ export default function Home() {
         {/* Heading */}
         <h1 className="text-5xl md:text-6xl font-extrabold tracking-wide mb-4
           text-cyan-400">
-          Welcome to Crypi
+          Crypto, Simplified.
         </h1>
 
-        <p className="text-lg md:text-xl font-light mb-8 max-w-2xl mx-auto
+        <p className="text-lg md:text-xl font-light mb-6 max-w-2xl mx-auto
           text-gray-800 dark:text-white">
-          Explore live cryptocurrency prices, market trends, and more.
-          Empowering your crypto journey.
+          Smart alerts, live prices, and your personal wallet in one dashboard.
         </p>
 
+        {/* Stats bar */}
+        <div className="flex flex-wrap justify-center gap-6 mb-8 text-sm font-medium text-gray-500 dark:text-gray-400">
+          <span className="flex items-center gap-1"><IoTrendingUpSharp className="text-cyan-400" /> 250+ Coins Tracked</span>
+          <span className="hidden sm:inline text-gray-300 dark:text-gray-600">|</span>
+          <span className="flex items-center gap-1"><IoFlashSharp className="text-cyan-400" /> Real-Time Prices</span>
+          <span className="hidden sm:inline text-gray-300 dark:text-gray-600">|</span>
+          <span className="flex items-center gap-1"><IoMailSharp className="text-cyan-400" /> Instant Email Alerts</span>
+        </div>
+
         {/* Buttons container */}
-        <div className="flex flex-col sm:flex-row justify-center gap-6 mt-8">
+        <div className="flex flex-col sm:flex-row justify-center gap-6 mt-2">
           <Link href="/dashboard" legacyBehavior>
             <a className="bg-cyan-500 hover:bg-cyan-600 text-white py-3 px-6 rounded-lg shadow-lg text-lg transition">
               Go to Dashboard
@@ -49,6 +58,25 @@ export default function Home() {
               </Link>
             )
           )}
+        </div>
+
+        {/* Feature cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-16">
+          <div className="rounded-xl p-6 bg-gray-100 dark:bg-gray-800 shadow-md text-left">
+            <IoStatsChartSharp className="text-4xl text-cyan-400 mb-3" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Live Prices</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Stream real-time prices from Binance with second-by-second updates across 250+ coins.</p>
+          </div>
+          <div className="rounded-xl p-6 bg-gray-100 dark:bg-gray-800 shadow-md text-left">
+            <IoNotificationsSharp className="text-4xl text-cyan-400 mb-3" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Price Alerts</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Set a target price and get an email the moment a coin crosses it - above or below.</p>
+          </div>
+          <div className="rounded-xl p-6 bg-gray-100 dark:bg-gray-800 shadow-md text-left">
+            <IoWalletOutline className="text-4xl text-cyan-400 mb-3" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Portfolio Wallet</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Track your holdings and see their live value update in real time, all in your personal wallet.</p>
+          </div>
         </div>
       </div>
 

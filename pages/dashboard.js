@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import CoinCard from '../components/CoinCard';
-import AddCoinModal from '../components/AddCoinModal';
-import { useCoinsWithPrices } from '../hooks/useCoinsWithPrices';
+import { useAuth } from '@/context/AuthContext';
+import CoinCard from '@/components/CoinCard';
+import AddCoinModal from '@/components/AddCoinModal';
+import { useCoinsWithPrices } from '@/hooks/useCoinsWithPrices';
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();

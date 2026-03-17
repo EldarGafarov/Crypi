@@ -1,6 +1,6 @@
 // pages/index.js
 import Link from 'next/link';
-import StudentCard from '../components/StudentCard';
+import StudentCard from '@/components/StudentCard';
 
 export default function About() {
   const students = [

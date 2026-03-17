@@ -1,5 +1,5 @@
-import { connectToDatabase } from '../../../lib/mongodb';
-import { getAuthenticatedUser } from '../../../lib/auth';
+import { connectToDatabase } from '@/lib/mongodb';
+import { getAuthenticatedUser } from '@/lib/auth';
 import { ObjectId } from 'mongodb';
 
 const isValidSymbol = (symbol) => typeof symbol === 'string' && /^[A-Z0-9]+USDT$/.test(symbol);

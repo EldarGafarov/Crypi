@@ -1,6 +1,6 @@
-import { connectToDatabase } from '../../../lib/mongodb';
-import { getAuthenticatedUser } from '../../../lib/auth';
-import { getCoinImages } from '../../../lib/coinImages';
+import { connectToDatabase } from '@/lib/mongodb';
+import { getAuthenticatedUser } from '@/lib/auth';
+import { getCoinImages } from '@/lib/coinImages';
 
 export default async function handler(req, res) {
   const { db } = await connectToDatabase();

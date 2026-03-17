@@ -1,5 +1,5 @@
-import { connectToDatabase } from '../../../lib/mongodb';
-import { sendPriceAlertEmail } from '../../../lib/email';
+import { connectToDatabase } from '@/lib/mongodb';
+import { sendPriceAlertEmail } from '@/lib/email';
 
 // This route is called by cron-job.org every minute.
 // It is NOT protected by JWT — instead it checks a shared secret

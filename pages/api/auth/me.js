@@ -1,5 +1,5 @@
-import { connectToDatabase } from '../../../lib/mongodb';
-import { getAuthenticatedUser } from '../../../lib/auth';
+import { connectToDatabase } from '@/lib/mongodb';
+import { getAuthenticatedUser } from '@/lib/auth';
 
 // This endpoint is called automatically by AuthContext every time the app loads.
 // Its job is to answer the question: "is there a valid, active login session in this request?"

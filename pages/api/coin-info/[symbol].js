@@ -1,4 +1,4 @@
-import { getCoinMarketData } from '../../../lib/coinImages';
+import { getCoinMarketData } from '@/lib/coinImages';
 
 // Returns enriched coin data for the detail page.
 // All data comes from the CoinGecko cache — no DB, no extra API calls.

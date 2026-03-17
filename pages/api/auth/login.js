@@ -1,5 +1,5 @@
-import { connectToDatabase } from '../../../lib/mongodb';
-import { signToken, buildCookieHeader } from '../../../lib/auth';
+import { connectToDatabase } from '@/lib/mongodb';
+import { signToken, buildCookieHeader } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
 
 const DUMMY_HASH = '$2b$12$invalidhashfortimingprotection0000000000000000';

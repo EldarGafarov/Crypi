@@ -1,7 +1,7 @@
 import React from 'react';
 import { useRouter } from 'next/router';
-import CoinInfo   from '../../components/CoinInfo';
-import PriceChart from '../../components/PriceChart';
+import CoinInfo   from '@/components/CoinInfo';
+import PriceChart from '@/components/PriceChart';
 
 const CoinDetail = () => {
   const { symbol } = useRouter().query;
