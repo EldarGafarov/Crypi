@@ -1,5 +1,5 @@
-import { connectToDatabase } from '../../../lib/mongodb';
-import { getAuthenticatedUser } from '../../../lib/auth';
+import { connectToDatabase } from '@/lib/mongodb';
+import { getAuthenticatedUser } from '@/lib/auth';
 
 // Validates that a symbol is a real-looking Binance USDT pair (uppercase letters/numbers, ends in USDT).
 // This replaced the old hardcoded whitelist so any coin the user adds to their dashboard can also be tracked in their wallet.

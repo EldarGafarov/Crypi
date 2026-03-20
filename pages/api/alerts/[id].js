@@ -1,5 +1,5 @@
-import { connectToDatabase } from '../../../lib/mongodb';
-import { getAuthenticatedUser } from '../../../lib/auth';
+import { connectToDatabase } from '@/lib/mongodb';
+import { getAuthenticatedUser } from '@/lib/auth';
 import { ObjectId } from 'mongodb';
 
 export default async function handler(req, res) {

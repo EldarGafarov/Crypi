@@ -1,4 +1,4 @@
-import { getCoinImages } from '../../../lib/coinImages';
+import { getCoinImages } from '@/lib/coinImages';
 
 // Fetches the top 10 USDT trading pairs from Binance sorted by 24h quote volume,
 // enriched with real coin images from CoinGecko (cached server-side for 1 hour).

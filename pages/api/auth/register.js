@@ -1,6 +1,6 @@
-import { connectToDatabase } from '../../../lib/mongodb';
-import { signToken, buildCookieHeader } from '../../../lib/auth';
-import { sendVerificationEmail } from '../../../lib/email';
+import { connectToDatabase } from '@/lib/mongodb';
+import { signToken, buildCookieHeader } from '@/lib/auth';
+import { sendVerificationEmail } from '@/lib/email';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 

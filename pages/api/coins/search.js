@@ -1,4 +1,4 @@
-import { getCoinImages } from '../../../lib/coinImages';
+import { getCoinImages } from '@/lib/coinImages';
 
 // Searches Binance USDT pairs by a query string, enriched with CoinGecko images.
 // Results are sorted by 24h quote volume so the most popular coins appear first.
